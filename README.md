@@ -18,7 +18,7 @@
   <ul>
     <li>Major Packages:</li>
     <li>MySQL</li>
-    <li>Laravel</li>
+    <li>Laravel 6.* LTS</li>
     <li>Laravel Passport</li>
     <li>Minor Packages:</li>
   </ul>
