@@ -1,0 +1,36 @@
+#set local variables
+#use find and replace to update $fullpath and $localuser, run each command manually, these commands are too powerful to script
+fullpath=/path/to/your/laravelproject
+localuser=yourlocalusername
+
+#make sure your local user is in the apache group
+sudo usermod -a -G www-data $localuser
+
+#give ownership of directory to apache group
+sudo chown -R www-data:www-data $fullpath
+
+#set all files to 644 and directorys to 755
+sudo find $fullpath -type f -exec chmod 644 {} \;
+sudo find $fullpath/ -type d -exec chmod 755 {} \;
+
+#chown a bunch more to make sure it knows you mean business
+sudo chown -R www-data:www-data $fullpath
+sudo chown -R www-data:www-data $fullpath/
+sudo chown -R $localuser:www-data $fullpath/
+
+#move into laravel project directory
+cd $fullpath/
+
+#give apache group ownership and write to storage and cache
+sudo chgrp -R www-data storage bootstrap/cache
+sudo chmod -R ug+rwx storage bootstrap/cache
+
+#give local user and apache group ownership and write to storage and cache
+sudo setfacl -Rdm u:$localuser:rwx,u:www-data:rwx storage
+sudo setfacl -Rm u:$localuser:rwx,u:www-data:rwx storage
+
+#set artisan back to executable
+sudo chmod +x artisan
+
+#rebuild npm because it gets mad
+npm rebuild
