@@ -32,8 +32,25 @@
     <li>React-Bootstrap</li>
   </ul>
   <h1>Installation Instructions:</h1>
+
   <ul>
-    <li>TODO</li>
+    <li>clone repository</li>
+<li>composer install</li>
+<li>npm install</li>
+<li>npm run dev</li>
+<li>update Laravel security settings</li>
+<li>update local /etc/hosts file</li>
+<li>update Apache2 Virtual Hosts</li>
+<li>examples in server_configs</li>
+<li>generate SSL certs if wanted (https://devcenter.heroku.com/articles/ssl-certificate-self)</li>
+<li>update Laravel .env file</li>
+<li>ensure to update msql database info</li>
+<li>generate Laravel app key</li>
+<li>php artisan key:generate</li>
+<li>link storage</li>
+<li>php artisan storage:link</li>
+<li>run migrations</li>
+<li>php artisan migrate</li>
   </ul>
   <h1>Contributing:</h1>
   <ul>
