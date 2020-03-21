@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\User;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use App\Http\Controllers\Controller;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
-//use App\Notifications\SignupActivate;
 
 class AuthController extends Controller
 {
@@ -36,11 +36,8 @@ class AuthController extends Controller
         }
 
         $request['password']=Hash::make($request['password']);
-        //$request['activation_token']=str_random(60);
         $user = User::create($request->toArray());
         $user->sendEmailVerificationNotification();
-
-       //$user->notify(new SignupActivate($user));
 
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
         $response = ['token' => $token];
@@ -55,14 +52,14 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-      $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
         'email' => 'required|string|email',
         'password' => 'required|string|min:6',
       ]);
 
-      if ($validator->fails()) {
-          return response(['error'=>$validator->errors()->all()], 422);
-      }
+        if ($validator->fails()) {
+            return response(['error'=>$validator->errors()->all()], 422);
+        }
 
         $user = User::where('email', $request->email)->first();
 
@@ -114,18 +111,18 @@ class AuthController extends Controller
         }
 
         if (! hash_equals((string) $request['id'], (string) $request->user()->getKey())) {
-          $response = ['error' => 'We cant find a user with that e-mail address.'];
-          return response($response, 404);
+            $response = ['error' => 'We cant find a user with that e-mail address.'];
+            return response($response, 404);
         }
 
         if (! hash_equals((string) $request['hash'], sha1($request->user()->getEmailForVerification()))) {
-          $response = ['error' => 'This activation token is invalid'];
-          return response($response, 404);
+            $response = ['error' => 'This activation token is invalid'];
+            return response($response, 404);
         }
 
         if ($request->user()->hasVerifiedEmail()) {
-          $response = ['error' => 'User is already activated'];
-          return response($response, 404);
+            $response = ['error' => 'User is already activated'];
+            return response($response, 404);
         }
 
         if ($request->user()->markEmailAsVerified()) {
@@ -142,7 +139,7 @@ class AuthController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function resend(Request $request)
+    public function resendVerify(Request $request)
     {
         if ($request->user()->hasVerifiedEmail()) {
             $response = ['error' => 'User is already activated'];
@@ -161,7 +158,7 @@ class AuthController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
-    public function sendResetLinkEmail(Request $request)
+    public function resetEmail(Request $request)
     {
         $validator = Validator::make($request->all(), [
           'email' => 'required|email'
@@ -181,36 +178,14 @@ class AuthController extends Controller
         $response == Password::RESET_LINK_SENT;
 
         if (!$response) {
-          $response = ['error' => 'Invalid Email'];
-          return response($response, 404);
+            $response = ['error' => 'Invalid Email'];
+            return response($response, 404);
         }
 
-       if ($response) {
-         $response = ['message' => 'We have e-mailed your reset code'];
-         return response($response, 200);
-       }
-
-    }
-
-    /**
-     * Get the needed authentication credentials from the request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    protected function credentials(Request $request)
-    {
-        return $request->only('email');
-    }
-
-    /**
-     * Get the broker to be used during password reset.
-     *
-     * @return \Illuminate\Contracts\Auth\PasswordBroker
-     */
-    public function broker()
-    {
-        return Password::broker();
+        if ($response) {
+            $response = ['message' => 'We have e-mailed your reset code'];
+            return response($response, 200);
+        }
     }
 
     /**
@@ -235,7 +210,8 @@ class AuthController extends Controller
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
         $response = $this->broker()->reset(
-            $this->resetCredentials($request), function ($user, $password) {
+            $this->resetCredentials($request),
+            function ($user, $password) {
                 $this->resetPassword($user, $password);
             }
         );
@@ -246,16 +222,16 @@ class AuthController extends Controller
         $response == Password::PASSWORD_RESET;
 
         if (!$response) {
-          $response = ['error' => 'Invalid Email or Token'];
-          return response($response, 404);
+            $response = ['error' => 'Invalid Email or Token'];
+            return response($response, 404);
         }
 
-       if ($response) {
-         $user = User::where('email', $request['email'])->first();
-         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-         $response = ['token' => $token];
-         return response($response, 200);
-       }
+        if ($response) {
+            $user = User::where('email', $request['email'])->first();
+            $token = $user->createToken('Laravel Password Grant Client')->accessToken;
+            $response = ['token' => $token];
+            return response($response, 200);
+        }
     }
 
     /**
@@ -267,7 +243,10 @@ class AuthController extends Controller
     protected function resetCredentials(Request $request)
     {
         return $request->only(
-            'email', 'password', 'password_confirmation', 'token'
+            'email',
+            'password',
+            'password_confirmation',
+            'token'
         );
     }
 
@@ -301,4 +280,24 @@ class AuthController extends Controller
         $user->password = Hash::make($password);
     }
 
+    /**
+     * Get the needed authentication credentials from the request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    protected function credentials(Request $request)
+    {
+        return $request->only('email');
+    }
+
+    /**
+     * Get the broker to be used during password reset.
+     *
+     * @return \Illuminate\Contracts\Auth\PasswordBroker
+     */
+    public function broker()
+    {
+        return Password::broker();
+    }
 }

@@ -22,7 +22,7 @@ Route::group(['middleware' => ['json.response']], function () {
     // public routes
     Route::post('/login', 'Api\AuthController@login')->name('login.api');
     Route::post('/register', 'Api\AuthController@register')->name('register.api');
-    Route::post('/password/email', 'Api\AuthController@sendResetLinkEmail')->name('password.email.api');
+    Route::post('/password/email', 'Api\AuthController@resetEmail')->name('password.email.api');
     Route::post('/password/reset', 'Api\AuthController@reset')->name('password.reset.api');
 
 
@@ -30,7 +30,7 @@ Route::group(['middleware' => ['json.response']], function () {
     Route::middleware('auth:api')->group(function () {
         Route::get('/logout', 'Api\AuthController@logout')->name('logout');
         Route::post('/email/verify', 'Api\AuthController@verify')->name('verification.verify.api');
-        Route::get('/email/resend', 'Api\AuthController@resend')->name('verification.resend.api');
+        Route::get('/email/resend', 'Api\AuthController@resendVerify')->name('verification.resend.api');
     });
 
 });
