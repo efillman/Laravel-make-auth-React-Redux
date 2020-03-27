@@ -2,6 +2,7 @@ import React from 'react';
 import {withRouter, Link} from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Card, Form, FormControl, Button, Container, Row, Col } from 'react-bootstrap';
+import { LinkContainer } from "react-router-bootstrap";
 
 import {loginAPI, getUserAPI} from "../api/apiURLs";
 import {loginUser, logoutUser} from "../actions/authentication";
@@ -23,8 +24,7 @@ class LoginComponent extends React.Component{
     };
 
     loadUserService = () => {
-        const access_token = window.localStorage.getItem(ACCESS_TOKEN);
-        const headers = {Accept: "application/json", Authorization: `Bearer ${access_token}`};
+        const headers = {Accept: "application/json", Authorization: `Bearer ${this.props.authentication.accessToken}`};
 
         axios.get(getUserAPI, {headers})
             .then((response) => {
@@ -42,14 +42,13 @@ class LoginComponent extends React.Component{
             )
             .catch((error) => {
                 console.log(error.response);
-                window.localStorage.removeItem(ACCESS_TOKEN);
                 this.props.dispatch(userInfoOut());
                 this.props.dispatch(logoutUser());
             });
     };
 
     componentDidMount(){
-        if(window.localStorage.getItem(ACCESS_TOKEN) !== null){
+        if(this.props.authentication.accessToken !== ""){
             // means the user is already logged in, check if it is valid
             this.setState(() => ({isLoading: true}));
             this.loadUserService();
@@ -67,8 +66,7 @@ class LoginComponent extends React.Component{
         };
 
         axios.post(loginAPI, data)
-        .then((response) => {
-            window.localStorage.setItem(ACCESS_TOKEN, response.data.token);
+        .then((response) => {        
             const authInfo = response.data;
             this.props.dispatch(loginUser({accessToken: authInfo.token}));
             this.loadUserService();
@@ -86,11 +84,12 @@ class LoginComponent extends React.Component{
         password: yup.string().required('Password is required')
     });
 
+    //TODO figureout how to load into errors from backend
     render() {
         if (this.state.isLoading) {
             return <LoadingScreen/>
         }
-        return (<Container className="py-1">
+        return (<Container className="py-4">
             <Row className="justify-content-center">
                 <Col md={8}>
                     {this.state.errors.length > 0 &&
@@ -123,31 +122,29 @@ class LoginComponent extends React.Component{
                                 <Card.Header>Login</Card.Header>
                                 <Card.Body>
                                     <Form noValidate="noValidate" onSubmit={handleSubmit}>
-                                      <Form.Row className="">
-                                            <Form.Group as={Col} md="6" controlId="validationFormik03">
-                                                <Form.Label>Email</Form.Label>
-                                                <Form.Control type="text" placeholder="Email" autoComplete="email" name="email" value={values.email} onChange={handleChange} onBlur={handleBlur} isValid={touched.email && !errors.email} isInvalid={touched.email && errors.email}/>
+                                            <Form.Group as={Row} controlId="validationFormik03">
+                                                <Form.Label column md="4">Email</Form.Label>
+                                                <Col md={6}>
+                                                  <Form.Control type="text" placeholder="Email" autoComplete="email" name="email" value={values.email} onChange={handleChange} onBlur={handleBlur} isValid={touched.email && !errors.email} isInvalid={touched.email && errors.email}/>
                                                 <Form.Control.Feedback type="valid"></Form.Control.Feedback>
                                                 <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
+                                                </Col>
                                             </Form.Group>
-                                        </Form.Row>
-                                        <Form.Row>
-                                            <Form.Group as={Col} md="6" controlId="validationFormik04">
-                                                <Form.Label>Password</Form.Label>
+                                            <Form.Group as={Row} controlId="validationFormik04">
+                                                <Form.Label column md="4">Password</Form.Label>
+                                                <Col md={6}>
                                                 <Form.Control type="password" placeholder="Password" autoComplete="new-password" name="password" value={values.password} onChange={handleChange} onBlur={handleBlur} isValid={touched.password && !errors.password} isInvalid={touched.email && errors.password}/>
                                                 <Form.Control.Feedback type="valid"></Form.Control.Feedback>
                                                 <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
+                                                </Col>
                                             </Form.Group>
-                                        </Form.Row>
-                                        <Form.Row>
-                                        <Button type="submit" disabled={this.isSubmitting}>Login</Button>
-                                        </Form.Row>
+                                              <Form.Group as={Row}>
+                                              <Col md={{ span: 8, offset: 4 }}>
+                                            <Button type="submit" disabled={this.isSubmitting}>Login</Button>
+                                              <LinkContainer to="/password/reset"><Button variant="link">Forgot Your Password?</Button></LinkContainer>
+                                              </Col>
+                                            </Form.Group>
                                     </Form>
-                                    <Row>
-                                      <Col md="auto" className={"py-1"}><Link to={"/register"} className={"btn btn-primary"}>Register</Link></Col>
-                                      <Col md="auto" className={"py-1"}><Link to={"/password/request"} className={"btn btn-primary"}>Forgot Password</Link></Col>
-                                      <Col md="auto" className={"py-1"}><Link to={"/terms"} className={"btn btn-primary"}>Terms</Link></Col>
-                                    </Row>
                                 </Card.Body>
                             </Card>)
                         }

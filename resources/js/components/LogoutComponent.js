@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {withRouter} from "react-router-dom";
 import {logoutUser} from "../actions/authentication";
-import {ACCESS_TOKEN, REFRESH_TOKEN} from "../api/strings";
+import {userInfoOut} from "../actions/userInfo";
 import {logoutAPI} from "../api/apiURLs";
 
 class LogoutComponent extends React.Component{
@@ -12,15 +12,14 @@ class LogoutComponent extends React.Component{
     };
 
     componentDidMount(){
-        const access_token = window.localStorage.getItem(ACCESS_TOKEN);
-        if(this.props.authentication.isAuthenticated && access_token !== null){
+        if(this.props.authentication.accessToken !== ""){
             const headers = {
                 Accept: "application/json",
-                Authorization: `Bearer ${access_token}`
+                Authorization: `Bearer ${this.props.authentication.accessToken}`
             };
             axios.get(logoutAPI, {headers})
                 .then(() => {
-                    window.localStorage.removeItem(ACCESS_TOKEN);
+                    this.props.dispatch(userInfoOut());
                     this.props.dispatch(logoutUser());
                     this.props.history.push("/login");
                 })

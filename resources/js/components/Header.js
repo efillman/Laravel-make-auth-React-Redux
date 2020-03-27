@@ -26,32 +26,7 @@ class Header extends React.Component {
         this.setState(() => ({menuItems: ["Log In", "Register"], loggedin: false}));
     };
 
-    loadUserService = () => {
-        const access_token = window.localStorage.getItem(ACCESS_TOKEN);
-        const headers = {Accept: "application/json", Authorization: `Bearer ${access_token}`};
-
-        axios.get(getUserAPI, {headers})
-            .then((response) => {
-              const userInfo = response.data;
-
-                 this.props.dispatch(userInfoIn({
-                      userName: userInfo.name,
-                     userEmail: userInfo.email,
-                     userActive: userInfo.active
-                 }));
-                //this.props.dispatch(loginUser());
-                this.setState(() => ({isLoading: false, success: userInfo}));
-                this.props.history.push("/home");
-                }
-            )
-            .catch((error) => {
-                console.log(error.response);
-                window.localStorage.removeItem(ACCESS_TOKEN);
-                this.props.dispatch(userInfoOut());
-                this.props.dispatch(logoutUser());
-            });
-    };
-
+    //check to see if user has activated email
     componentWillReceiveProps(nextProps) {
         let currentPath = this.props.location.pathname.toString();
         let nextPath = nextProps.location.pathname.toString();
