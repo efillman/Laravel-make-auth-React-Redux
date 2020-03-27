@@ -76,34 +76,29 @@ class Header extends React.Component {
         }
     }
 
+    //can use this method if you want to change logo link if authenticated
     displayHome() {
       if (this.props.authentication.isAuthenticated) {
         return (
-          <LinkContainer to="/home">
+          <LinkContainer to="/">
             <Navbar.Brand>
           {window.Laravel.app_name}
-          <img className="img-responsive" src={window.Laravel.img_asset_path + '/logo.svg'} height="30" alt=""/>
         </Navbar.Brand>
       </LinkContainer>);
       } else {
         return (
           <LinkContainer to="/"><Navbar.Brand>
           {window.Laravel.app_name}
-          <img className="img-responsive" src={window.Laravel.img_asset_path + '/logo.svg'} height="30" alt=""/>
-        </Navbar.Brand></LinkContainer>
+        </Navbar.Brand>
+      </LinkContainer>
       );
       }
     }
 
+    //can use this to display a search bar component if authenticated
     displaySearchBar() {
       if (this.props.authentication.isAuthenticated) {
-        return (<SearchBarComponent/>);
-      }
-    }
 
-    displayCoinBar() {
-      if (this.props.authentication.isAuthenticated) {
-        return <CoinBarOutput/>;
       }
     }
 
@@ -119,11 +114,10 @@ class Header extends React.Component {
             if(item === "Forgot Password"){
                 return <LinkContainer to="/password/request" key={key}><Nav.Link key={key}>Forgot Password</Nav.Link></LinkContainer>
             }
-            
+
             if(item === "Log Out"){
                 return (
-                <NavDropdown title="Dropdown" id="collapsible-nav-dropdown" key={key}>
-                    <NavDropdown.Item href="#action/3.1">{this.props.userInfo.userName}</NavDropdown.Item>
+                <NavDropdown title={this.props.userInfo.userName} id="collapsible-nav-dropdown" key={key}>
                       <LinkContainer to="/logout">
                         <NavDropdown.Item>Logout</NavDropdown.Item>
                       </LinkContainer>
@@ -135,7 +129,8 @@ class Header extends React.Component {
 
 render() {
     return (
-      <Navbar className="d-flex justify-content-between" collapseOnSelect="collapseOnSelect" expand="md" bg="dark" variant="dark">
+      <Navbar className="shadow-sm " collapseOnSelect="collapseOnSelect" expand="md" bg="white" variant="light">
+        <Container>
         <Nav className="">
             {this.displayHome()}
         </Nav>
@@ -145,10 +140,10 @@ render() {
         <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
         <Navbar.Collapse className="" id="responsive-navbar-nav">
             <Nav className="ml-auto">
-                {this.displayCoinBar()}
                 {this.displayLinksBar()}
             </Nav>
         </Navbar.Collapse>
+      </Container>
     </Navbar>)
 }
 }

@@ -8,6 +8,8 @@ import Footer from '../components/Footer';
 
 import WelcomeComponent from "../components/WelcomeComponent";
 import HomeComponent from "../components/HomeComponent";
+import LoginComponent from "../components/LoginComponent";
+import LogoutComponent from "../components/LogoutComponent";
 
 
 const appRouter = () => (
@@ -17,6 +19,8 @@ const appRouter = () => (
             <Switch>
                 <Route path="/" component={WelcomeComponent} exact={true} />
                 <Route path="/home" component={HomeComponent} exact={true} />
+                <Route path="/login" component={LoginComponent} exact={true} />
+                <Route path="/logout" component={LogoutComponent} exact={true} />
             </Switch>
             <Footer/>
         </div>

@@ -5,7 +5,7 @@ import {Container, Row, Col, Card} from 'react-bootstrap';
 export default class HomeComponent extends Component {
     render() {
         return (
-          <Container>
+          <Container className="py-4">
             <Row className="justify-content-center">
                 <Col md="8">
                     <Card>
