@@ -10,6 +10,8 @@ import WelcomeComponent from "../components/WelcomeComponent";
 import HomeComponent from "../components/HomeComponent";
 import LoginComponent from "../components/LoginComponent";
 import LogoutComponent from "../components/LogoutComponent";
+import RegistrationComponent from "../components/RegistrationComponent";
+
 
 
 const appRouter = () => (
@@ -21,6 +23,7 @@ const appRouter = () => (
                 <Route path="/home" component={HomeComponent} exact={true} />
                 <Route path="/login" component={LoginComponent} exact={true} />
                 <Route path="/logout" component={LogoutComponent} exact={true} />
+                <Route path="/register" component={RegistrationComponent} exact={true} />
             </Switch>
             <Footer/>
         </div>
