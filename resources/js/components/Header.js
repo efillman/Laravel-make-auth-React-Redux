@@ -33,8 +33,8 @@ class Header extends React.Component {
         if (currentPath !== nextPath || this.props.authentication.isAuthenticated !== nextProps.authentication.isAuthenticated) {
             if (nextProps.authentication.isAuthenticated) {
                 this.changeMenuOptionsAuthenticated();
-                if (currentPath !== nextPath && this.props.userInfo.userActive === 0) {
-                  this.props.history.push("/email/resend"); }
+                if (currentPath !== nextPath && this.props.userInfo.userActive === null) {
+                  this.props.history.push("/email/verify"); }
 
             } else {
                 this.changeMenuOptionsUnauthenticated();

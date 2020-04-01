@@ -11,6 +11,7 @@ import HomeComponent from "../components/HomeComponent";
 import LoginComponent from "../components/LoginComponent";
 import LogoutComponent from "../components/LogoutComponent";
 import RegistrationComponent from "../components/RegistrationComponent";
+import EmailVerifyComponent from "../components/EmailVerifyComponent";
 
 
 
@@ -24,6 +25,7 @@ const appRouter = () => (
                 <Route path="/login" component={LoginComponent} exact={true} />
                 <Route path="/logout" component={LogoutComponent} exact={true} />
                 <Route path="/register" component={RegistrationComponent} exact={true} />
+                <Route path="/email/verify/:verifyid/:verifytoken" component={EmailVerifyComponent} exact={true} />
             </Switch>
             <Footer/>
         </div>

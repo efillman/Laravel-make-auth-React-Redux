@@ -29,7 +29,7 @@ Route::group(['middleware' => ['json.response']], function () {
     // private routes
     Route::middleware('auth:api')->group(function () {
         Route::get('/logout', 'Api\AuthController@logout')->name('logout');
-        Route::post('/email/verify', 'Api\AuthController@verify')->name('verification.verify.api');
+        Route::post('/email/verify/{id}/{hash}', 'Api\AuthController@verify')->name('verification.verify.api');
         Route::get('/email/resend', 'Api\AuthController@resendVerify')->name('verification.resend.api');
     });
 

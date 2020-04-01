@@ -32,7 +32,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response(['error'=>$validator->errors()->all()], 422);
+            return response(['error'=>$validator->errors()->all()], 400);
         }
 
         $request['password']=Hash::make($request['password']);
@@ -58,7 +58,7 @@ class AuthController extends Controller
       ]);
 
         if ($validator->fails()) {
-            return response(['error'=>$validator->errors()->all()], 422);
+            return response(['error'=>$validator->errors()->all()], 400);
         }
 
         $user = User::where('email', $request->email)->first();
@@ -70,11 +70,11 @@ class AuthController extends Controller
                 return response($response, 200);
             } else {
                 $response = ['error' => "Password missmatch"];
-                return response($response, 422);
+                return response($response, 400);
             }
         } else {
             $response = ['error' => 'User does not exist'];
-            return response($response, 422);
+            return response($response, 400);
         }
     }
 
@@ -107,22 +107,22 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response(['error'=>$validator->errors()->all()], 422);
+            return response(['error'=>$validator->errors()->all()], 400);
         }
 
         if (! hash_equals((string) $request['id'], (string) $request->user()->getKey())) {
             $response = ['error' => 'We cant find a user with that e-mail address.'];
-            return response($response, 404);
+            return response($response, 400);
         }
 
         if (! hash_equals((string) $request['hash'], sha1($request->user()->getEmailForVerification()))) {
             $response = ['error' => 'This activation token is invalid'];
-            return response($response, 404);
+            return response($response, 400);
         }
 
         if ($request->user()->hasVerifiedEmail()) {
             $response = ['error' => 'User is already activated'];
-            return response($response, 404);
+            return response($response, 400);
         }
 
         if ($request->user()->markEmailAsVerified()) {
@@ -143,7 +143,7 @@ class AuthController extends Controller
     {
         if ($request->user()->hasVerifiedEmail()) {
             $response = ['error' => 'User is already activated'];
-            return response($response, 404);
+            return response($response, 400);
         }
 
         $request->user()->sendEmailVerificationNotification();
@@ -165,7 +165,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response(['error'=>$validator->errors()->all()], 422);
+            return response(['error'=>$validator->errors()->all()], 400);
         }
 
         // We will send the password reset link to this user. Once we have attempted
@@ -179,7 +179,7 @@ class AuthController extends Controller
 
         if (!$response) {
             $response = ['error' => 'Invalid Email'];
-            return response($response, 404);
+            return response($response, 400);
         }
 
         if ($response) {
@@ -203,7 +203,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response(['error'=>$validator->errors()->all()], 422);
+            return response(['error'=>$validator->errors()->all()], 400);
         }
 
         // Here we will attempt to reset the user's password. If it is successful we
@@ -223,7 +223,7 @@ class AuthController extends Controller
 
         if (!$response) {
             $response = ['error' => 'Invalid Email or Token'];
-            return response($response, 404);
+            return response($response, 400);
         }
 
         if ($response) {

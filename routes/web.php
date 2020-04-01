@@ -13,12 +13,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+Route::view('/{path?}', 'welcome');
+Route::view('/{path?}/{path1?}', 'welcome');
+Route::view('/{path?}/{path1?}/{path2?}', 'welcome');
+Route::view('/{path?}/{path1?}/{path2?}/{path3?}', 'welcome');
 
-Route::get('/home', 'HomeController@index')->name('home');
+//Route::get('/home', 'HomeController@index')->name('home');
+Route::get('login','Auth\LoginController@login')->name('login');
 
-//temporary for testing
+//these routes are used only for verification emails
 Route::get('email/verify/{id}/{hash}', 'Auth\VerificationController@verify')->name('verification.verify');
 Route::get('password/reset/{token}', 'Auth\VerificationController@reset')->name('password.reset');
