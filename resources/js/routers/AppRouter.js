@@ -26,6 +26,7 @@ const appRouter = () => (
                 <Route path="/logout" component={LogoutComponent} exact={true} />
                 <Route path="/register" component={RegistrationComponent} exact={true} />
                 <Route path="/email/verify/:verifyid/:verifytoken" component={EmailVerifyComponent} exact={true} />
+                <Route path="/email/verify" component={EmailVerifyComponent} exact={true} />
             </Switch>
             <Footer/>
         </div>

@@ -12,11 +12,9 @@ import {
     InputGroup
 } from 'react-bootstrap';
 
-import {getUserAPI, registerAPI, emailVerifyAPI} from "../api/apiURLs";
+import {getUserAPI, emailVerifyAPI, emailResendAPI} from "../api/apiURLs";
 import {loginUser, logoutUser} from "../actions/authentication";
 import {userInfoIn, userInfoOut} from "../actions/userInfo";
-import {resetInUser, resetOutUser} from "../actions/resetPassword";
-import {ACCESS_TOKEN} from "../api/strings";
 
 import LoadingScreen from "../components/LoadingScreen";
 import * as yup from 'yup'; // for everything
@@ -63,37 +61,37 @@ class EmailVerifyComponent extends React.Component {
 
         if ((this.props.match.params.verifyid !== null) && (this.props.match.params.verifytoken !== null)) {
             // check password reset token
-            this.setState(() => ({isLoading: true}));
-            const verify_id = this.props.match.params.verifyid;
-            const verify_token = this.props.match.params.verifytoken;
-
             const headers = {Accept: "application/json", Authorization: `Bearer ${this.props.authentication.accessToken}`};
-            axios.post(emailVerifyAPI + '/' + verify_id + '/' + verify_token, {headers})
+            this.setState(() => ({isLoading: true}));
 
-            .then((response) => {
-                  const success = Object.values(response.data)
-                  this.setState(() => ({isLoading: false, success}));
-                  this.props.history.push("/home");
-              })
-          .catch((error) => {
+            //grap data from parameters
+            const data = {
+                id: this.props.match.params.verifyid,
+                hash: this.props.match.params.verifytoken
+            };
+
+            axios.post(emailVerifyAPI, data, {headers}).then((response) => {
+              const success = Object.values(response.data);
+              this.setState(() => ({isLoading: false, success}));
+              this.loadUserService();
+              this.props.history.push("/home");
+            }).catch((error) => {
                 const errors = Object.values(error.response.data);
                 this.setState(() => ({isLoading: false, errors}));
             });
-        }
+          }
     }
 
-    //TODO change this to submit to the request password reset api
+
     handleSubmit = (values, {
         props = this.props,
         setSubmitting
     }) => {
 
         this.setState(() => ({isLoading: true}));
-        const data = {
-            email: values.email
-        };
 
-        axios.post(passwordRequestAPI, data).then((response) => {
+        const headers = {Accept: "application/json", Authorization: `Bearer ${this.props.authentication.accessToken}`};
+        axios.get(emailResendAPI, {headers}).then((response) => {
           const success = Object.values(response.data);
           this.setState(() => ({isLoading: false, success}));
         }).catch((error) => {
@@ -102,42 +100,38 @@ class EmailVerifyComponent extends React.Component {
         });
     };
 
-    schema = yup.object().shape({
-        email: yup.string().email().required()
-    });
-
     render() {
         if (this.state.isLoading) {
             return <LoadingScreen/>
         }
-        return (<Container>
+        return (<Container className="py-4">
             <Row className="justify-content-center">
-                <Col lg={7} md={7}>
-                    {this.state.errors.length > 0 &&
-                      <Card bg="danger" text="white">
-                          <Card.Header>Error</Card.Header>
-                          <Card.Body>
+                <Col md={8}>
+                  <Card>
+                      <Card.Header>Verify Your Email Address</Card.Header>
+                      <Card.Body>
+                        {this.state.errors.length > 0 &&
+                          <div class="alert alert-danger">
                             <ul>
                             {this.state.errors.map((item, key) => {
                               return <li key={key}>{item}</li>
                             })}
                             </ul>
-                          </Card.Body>
-                      </Card>
-                    }
-                    {this.state.success.length > 0 &&
-                      <Card bg="success" text="white">
-                          <Card.Header>Valid Token</Card.Header>
-                          <Card.Body>
-                            <ul>
-                            {this.state.success.map((item, key) => {
-                              return <li key={key}>{item}</li>
-                            })}
-                            </ul>
-                          </Card.Body>
-                      </Card>
-                    }
-
+                          </div>
+                        }
+                        {this.state.success.length > 0 &&
+                          <div class="alert alert-success">
+                                <ul>
+                                {this.state.success.map((item, key) => {
+                                  return <li key={key}>{item}</li>
+                                })}
+                                </ul>
+                          </div>
+                              }
+                        <p>Before proceeding, please check your email for a verification link. If you did not receive the email,</p>
+                        <Button type="submit" variant="link">click here to request another</Button>
+                      </Card.Body>
+                  </Card>)
                 </Col>
             </Row>
         </Container>);
