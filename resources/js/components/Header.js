@@ -26,29 +26,18 @@ class Header extends React.Component {
         this.setState(() => ({menuItems: ["Log In", "Register"], loggedin: false}));
     };
 
-    //check to see if user has activated email
-    componentWillReceiveProps(nextProps) {
-        let currentPath = this.props.location.pathname.toString();
-        let nextPath = nextProps.location.pathname.toString();
-        if (currentPath !== nextPath || this.props.authentication.isAuthenticated !== nextProps.authentication.isAuthenticated) {
-            if (nextProps.authentication.isAuthenticated) {
-                this.changeMenuOptionsAuthenticated();
-                if (currentPath !== nextPath && this.props.userInfo.userActive === null) {
-                  this.props.history.push("/email/verify"); }
+    componentDidUpdate() {
 
-            } else {
-                this.changeMenuOptionsUnauthenticated();
-            }
-        }
+
     }
 
     componentDidMount() {
         if (this.props.authentication.isAuthenticated) {
             this.changeMenuOptionsAuthenticated();
-
         } else {
             this.changeMenuOptionsUnauthenticated();
         }
+
     }
 
     //can use this method if you want to change logo link if authenticated

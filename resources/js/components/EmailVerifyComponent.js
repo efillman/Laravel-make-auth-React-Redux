@@ -43,7 +43,7 @@ class EmailVerifyComponent extends React.Component {
                      userActive: userInfo.email_verified_at
                  }));
                 //this.props.dispatch(loginUser());
-                this.setState(() => ({isLoading: false, success: userInfo}));
+                //this.setState(() => ({isLoading: false, success: userInfo}));
                 }
             )
             .catch((error) => {
@@ -52,13 +52,24 @@ class EmailVerifyComponent extends React.Component {
                 this.props.dispatch(logoutUser());
                 this.props.history.push("/login");
             });
+
+          if (this.props.userInfo.userActive !== null && this.props.userInfo.userActive !== 0) {
+              this.props.history.push("/home");
+          }
+
     };
+
+    componentDidUpdate() {
+      if (this.props.userInfo.userActive !== null && this.props.userInfo.userActive !== 0) {
+          this.props.history.push("/home");
+      }
+    }
 
     componentDidMount() {
       this.setState(() => ({isLoading: true}));
       this.loadUserService();
 
-
+      if (this.props.match.path === "/email/verify/:verifyid/:verifytoken") {
         if ((this.props.match.params.verifyid !== null) && (this.props.match.params.verifytoken !== null)) {
             // check password reset token
             const headers = {Accept: "application/json", Authorization: `Bearer ${this.props.authentication.accessToken}`};
@@ -74,20 +85,20 @@ class EmailVerifyComponent extends React.Component {
               const success = Object.values(response.data);
               this.setState(() => ({isLoading: false, success}));
               this.loadUserService();
-              this.props.history.push("/home");
             }).catch((error) => {
                 const errors = Object.values(error.response.data);
                 this.setState(() => ({isLoading: false, errors}));
             });
           }
+        }
+        this.setState(() => ({isLoading: false}));
+
+
+
     }
 
-
-    handleSubmit = (values, {
-        props = this.props,
-        setSubmitting
-    }) => {
-
+    handleSubmit = (e) => {
+        e.preventDefault();
         this.setState(() => ({isLoading: true}));
 
         const headers = {Accept: "application/json", Authorization: `Bearer ${this.props.authentication.accessToken}`};
@@ -111,7 +122,7 @@ class EmailVerifyComponent extends React.Component {
                       <Card.Header>Verify Your Email Address</Card.Header>
                       <Card.Body>
                         {this.state.errors.length > 0 &&
-                          <div class="alert alert-danger">
+                          <div className="alert alert-danger">
                             <ul>
                             {this.state.errors.map((item, key) => {
                               return <li key={key}>{item}</li>
@@ -120,7 +131,7 @@ class EmailVerifyComponent extends React.Component {
                           </div>
                         }
                         {this.state.success.length > 0 &&
-                          <div class="alert alert-success">
+                          <div className="alert alert-success">
                                 <ul>
                                 {this.state.success.map((item, key) => {
                                   return <li key={key}>{item}</li>
@@ -128,10 +139,13 @@ class EmailVerifyComponent extends React.Component {
                                 </ul>
                           </div>
                               }
-                        <p>Before proceeding, please check your email for a verification link. If you did not receive the email,</p>
-                        <Button type="submit" variant="link">click here to request another</Button>
+                        <div>Before proceeding, please check your email for a verification link. If you did not receive the email,
+                        <Form noValidate="noValidate" onSubmit={this.handleSubmit}>
+                      <Button type="submit" variant="link" className="p-0 m-0 align-baseline">click here to request another</Button>.
+                        </Form>
+                        </div>
                       </Card.Body>
-                  </Card>)
+                  </Card>
                 </Col>
             </Row>
         </Container>);
@@ -142,7 +156,8 @@ class EmailVerifyComponent extends React.Component {
 const mapStateToProps = (state) => {
     return {
         resetPassword: state.resetPassword,
-        authentication: state.authentication
+        authentication: state.authentication,
+        userInfo: state.userInfo
     };
 };
 

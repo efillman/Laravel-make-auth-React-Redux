@@ -36,8 +36,14 @@ class LoginComponent extends React.Component{
                      userActive: userInfo.email_verified_at
                  }));
                 //this.props.dispatch(loginUser());
-                this.setState(() => ({isLoading: false, success: userInfo}));
+                if (this.props.userInfo.userActive === null || this.props.userInfo.userActive === 0) {
+                  if(this.props.match.path !== "/email/verify" || this.props.match.path !== "/email/verify/:verifyid/:verifytoken") {
+                    this.props.history.push("/email/verify");
+                  }
+                } else {
+
                 this.props.history.push("/home");
+                }
                 }
             )
             .catch((error) => {
@@ -45,6 +51,8 @@ class LoginComponent extends React.Component{
                 this.props.dispatch(userInfoOut());
                 this.props.dispatch(logoutUser());
             });
+
+
     };
 
     componentDidMount(){
@@ -52,6 +60,7 @@ class LoginComponent extends React.Component{
             // means the user is already logged in, check if it is valid
             this.setState(() => ({isLoading: true}));
             this.loadUserService();
+            this.setState(() => ({isLoading: false}));
         }
     }
 

@@ -148,7 +148,7 @@ class AuthController extends Controller
 
         $request->user()->sendEmailVerificationNotification();
 
-        $response = ['message' => 'We have e-mailed your new activation code'];
+        $response = ['message' => 'A fresh verification link has been sent to your email address.'];
         return response($response, 200);
     }
 
