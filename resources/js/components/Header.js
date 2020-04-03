@@ -27,15 +27,23 @@ class Header extends React.Component {
     };
 
     componentDidUpdate() {
-
-
+      if (this.props.authentication.isAuthenticated && !this.state.loggedin) {
+          this.changeMenuOptionsAuthenticated();
+      } else {
+        if (!this.props.authentication.isAuthenticated && this.state.loggedin) {
+          this.changeMenuOptionsUnauthenticated();
+        }
+      }
     }
 
     componentDidMount() {
-        if (this.props.authentication.isAuthenticated) {
+      this.changeMenuOptionsUnauthenticated();
+        if (this.props.authentication.isAuthenticated && !this.state.loggedin) {
             this.changeMenuOptionsAuthenticated();
         } else {
+          if (!this.props.authentication.isAuthenticated && this.state.loggedin) {
             this.changeMenuOptionsUnauthenticated();
+          }
         }
 
     }

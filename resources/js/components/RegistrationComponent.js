@@ -44,7 +44,7 @@ class RegistrationComponent extends React.Component {
                  }));
                 //this.props.dispatch(loginUser());
                 this.setState(() => ({isLoading: false, success: userInfo}));
-                this.props.history.push("/home");
+                this.props.history.push("/email/verify");
                 }
             )
             .catch((error) => {
