@@ -12,6 +12,7 @@ import LoginComponent from "../components/LoginComponent";
 import LogoutComponent from "../components/LogoutComponent";
 import RegistrationComponent from "../components/RegistrationComponent";
 import EmailVerifyComponent from "../components/EmailVerifyComponent";
+import PasswordRequestComponent from "../components/PasswordRequestComponent";
 
 
 
@@ -27,7 +28,8 @@ const appRouter = () => (
                 <Route path="/register" component={RegistrationComponent} exact={true} />
                 <Route path="/email/verify/:verifyid/:verifytoken" component={EmailVerifyComponent} exact={true} />
                 <Route path="/email/verify" component={EmailVerifyComponent} exact={true} />
-            </Switch>
+                <Route path="/password/reset" component={PasswordRequestComponent} exact={true} />
+          </Switch>
             <Footer/>
         </div>
     </BrowserRouter>

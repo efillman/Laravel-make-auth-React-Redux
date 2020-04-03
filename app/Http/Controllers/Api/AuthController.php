@@ -183,7 +183,7 @@ class AuthController extends Controller
         }
 
         if ($response) {
-            $response = ['message' => 'We have e-mailed your reset code'];
+            $response = ['message' => 'We have emailed your reset link!'];
             return response($response, 200);
         }
     }
