@@ -175,6 +175,7 @@ class AuthController extends Controller
             $this->credentials($request)
         );
 
+        //TODO need better error handeling here for a non user email?
         $response == Password::RESET_LINK_SENT;
 
         if (!$response) {
