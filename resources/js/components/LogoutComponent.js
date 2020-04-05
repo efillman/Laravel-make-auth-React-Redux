@@ -4,6 +4,11 @@ import {withRouter} from "react-router-dom";
 import {logoutUser} from "../actions/authentication";
 import {userInfoOut} from "../actions/userInfo";
 import {logoutAPI} from "../api/apiURLs";
+import {
+    Container,
+    Row,
+    Col
+} from 'react-bootstrap';
 
 class LogoutComponent extends React.Component{
 
@@ -36,9 +41,13 @@ class LogoutComponent extends React.Component{
 
     render(){
         return (
-            <div className={"minimum-height"} ref={"logout-div"}>
-                <h3 className={"margin-five"}>{this.state.logoutMessage}</h3>
-            </div>
+          <Container className="">
+              <Row className="justify-content-center">
+                  <Col className="justify-content-center text-center" md={12}>
+            {this.state.logoutMessage}
+          </Col>
+      </Row>
+    </Container>
         )
     }
 }
