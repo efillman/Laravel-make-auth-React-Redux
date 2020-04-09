@@ -16,14 +16,19 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/', function () {
 //     return view('welcome');
 // });
+
+
+//Route::get('/home', 'HomeController@index')->name('home');
+
+Route::view('/auth/login', 'login');
+Route::post('/auth/login', 'AuthController@login')->name('authlogin');
+
+//these routes are used only for verification emails
 Route::view('/{path?}', 'welcome');
 Route::view('/{path?}/{path1?}', 'welcome');
 Route::view('/{path?}/{path1?}/{path2?}', 'welcome');
 Route::view('/{path?}/{path1?}/{path2?}/{path3?}', 'welcome');
 
-//Route::get('/home', 'HomeController@index')->name('home');
 Route::get('login','Auth\LoginController@login')->name('login');
-
-//these routes are used only for verification emails
 Route::get('email/verify/{id}/{hash}', 'Auth\VerificationController@verify')->name('verification.verify');
 Route::get('password/reset/{token}', 'Auth\VerificationController@reset')->name('password.reset');

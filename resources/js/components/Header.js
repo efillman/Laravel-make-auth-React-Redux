@@ -23,7 +23,7 @@ class Header extends React.Component {
     };
 
     changeMenuOptionsUnauthenticated = () => {
-        this.setState(() => ({menuItems: ["Log In", "Register"], loggedin: false}));
+        this.setState(() => ({menuItems: ["New Log In","Log In", "Register"], loggedin: false}));
     };
 
     componentDidUpdate() {
@@ -77,6 +77,9 @@ class Header extends React.Component {
     displayLinksBar() {
       return (
         this.state.menuItems.map((item, key) => {
+            if(item === "New Log In"){
+                return <LinkContainer to="/newlogin" key={key}><Nav.Link key={key}>New Login</Nav.Link></LinkContainer>
+            }
             if(item === "Log In"){
                 return <LinkContainer to="/login" key={key}><Nav.Link key={key}>Login</Nav.Link></LinkContainer>
             }
