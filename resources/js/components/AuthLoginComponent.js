@@ -13,8 +13,9 @@ import LoadingScreen from "../components/LoadingScreen";
 import * as yup from 'yup'; // for everything
 import {Formik} from 'formik';
 import crypto from 'crypto-js';
+import qs from 'qs';
 
-class NewLoginComponent extends React.Component{
+class AuthLoginComponent extends React.Component{
 
     state = {
         passwordHelp: undefined,
@@ -63,72 +64,35 @@ class NewLoginComponent extends React.Component{
 
     componentDidMount(){
 
-      window.addEventListener('message', (e) => {
-        if (e.origin !== 'http://dev.react.local' || ! Object.keys(e.data).includes('access_token')) {
-          return;
+        const code = qs.parse(this.props.location.search, {ignoreQueryPrefix: true}).code
+        const state = qs.parse(this.props.location.search, {ignoreQueryPrefix: true}).state
+
+        if (code && state) {
+        if (state === window.localStorage.getItem('state')) {
+          let params = {
+            grant_type: 'authorization_code',
+            client_id: 7,
+            redirect_uri: 'http://dev.react.local/auth',
+            code_verifier: window.localStorage.getItem('verifier'),
+            code
+          }
+
+          axios.post('http://dev.react.local/oauth/token', params)
+            .then((resp) => {
+                const authInfo = resp.data;
+              window.opener.postMessage(authInfo);
+              localStorage.removeItem('state');
+              localStorage.removeItem('verifier');
+              window.close();
+            })
+            .catch(e => {
+              console.dir(e);
+            });
         }
-
-        const {token_type, expires_in, access_token, refresh_token} = e.data;
-        this.props.dispatch(loginUser({accessToken: access_token}));
-        this.loadUserService();
-
-      });
-
-      this.state.loginstate = this.createRandomString(40);
-      const verifier = this.createRandomString(128);
-
-      this.state.loginchallenge = this.base64Url(crypto.SHA256(verifier));
-      window.localStorage.setItem('state', this.state.loginstate);
-      window.localStorage.setItem('verifier', verifier);
-
-      this.state.loginurl = 'http://dev.react.local/oauth/authorize?client_id=7&redirect_uri=http://dev.react.local/auth&response_type=code&scope=*&state=' + this.state.loginstate + '&code_challenge=' + this.state.loginchallenge + '&code_challenge_method=S256';
-
-
+      }
     }
 
-    handleSubmit = (values, {
-        props = this.props,
-        setSubmitting
-    }) => {
-        this.setState(() => ({isLoading: true}));
-        const data = {
-            email: values.email,
-            password: values.password,
-        };
 
-        axios.post(loginAPI, data)
-        .then((response) => {
-            const authInfo = response.data;
-            this.props.dispatch(loginUser({accessToken: authInfo.token}));
-            this.loadUserService();
-        })
-        .catch((error) => (
-            this.setState(() => ({
-                invalidCredentials: true,
-                isLoading: false
-            }))
-        ));
-    };
-
-    schema = yup.object().shape({
-        email: yup.string().email().required(),
-        password: yup.string().required('Password is required')
-    });
-
-    openLoginWindow = () => {
-      window.open(this.state.loginurl, 'popup', 'width=700,height=700');
-    };
-
-    base64Url = (input) => {
-      return input.toString(crypto.enc.Base64)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-    };
-
-    createRandomString = (num) => {
-      return [...Array(num)].map(() => Math.random().toString(36)[2]).join('')
-    };
 
 
 
@@ -143,7 +107,7 @@ class NewLoginComponent extends React.Component{
                     <Card>
                       <Card.Header>Login</Card.Header>
                       <Card.Body>
-                        <Button onClick={this.openLoginWindow}>Login</Button>
+                        Logging in...
                       </Card.Body>
                     </Card>
                 </Col>
@@ -162,4 +126,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps)(withRouter(NewLoginComponent));
+export default connect(mapStateToProps)(withRouter(AuthLoginComponent));
