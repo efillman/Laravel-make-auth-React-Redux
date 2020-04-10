@@ -12,6 +12,7 @@ import {ACCESS_TOKEN, REFRESH_TOKEN} from "../api/strings";
 import LoadingScreen from "../components/LoadingScreen";
 import * as yup from 'yup'; // for everything
 import {Formik} from 'formik';
+import crypto from 'crypto-js';
 
 class NewLoginComponent extends React.Component{
 
@@ -20,6 +21,11 @@ class NewLoginComponent extends React.Component{
         usernameHelp: undefined,
         invalidCredentials: undefined,
         isLoading: false,
+        email: '',
+        password: '',
+        loginstate: '',
+        loginchallenge: '',
+        loginurl: '',
         errors: []
     };
 
@@ -56,12 +62,31 @@ class NewLoginComponent extends React.Component{
     };
 
     componentDidMount(){
-        if(this.props.authentication.accessToken !== ""){
-            // means the user is already logged in, check if it is valid
-            this.setState(() => ({isLoading: true}));
-            this.loadUserService();
-            this.setState(() => ({isLoading: false}));
+
+      window.addEventListener('message', (e) => {
+        if (e.origin !== 'http://dev.react.local' || ! Object.keys(e.data).includes('access_token')) {
+          return;
         }
+
+        const {token_type, expires_in, access_token, refresh_token} = e.data;
+        this.$axios.setToken(access_token, token_type);
+
+        this.$axios.$get('http://dev.react.local/api/user')
+          .then(resp => {
+            console.log(resp);
+          })
+      });
+
+      this.state.loginstate = this.createRandomString(40);
+      const verifier = this.createRandomString(128);
+
+      this.state.loginchallenge = this.base64Url(crypto.SHA256(verifier));
+      window.localStorage.setItem('state', this.state.loginstate);
+      window.localStorage.setItem('verifier', verifier);
+
+      this.state.loginurl = 'http://dev.react.local/oauth/authorize?client_id=7&redirect_uri=http://dev.react.local/auth&response_type=code&scope=*&state=' + this.state.loginstate + '&code_challenge=' + this.state.loginchallenge + '&code_challenge_method=S256';
+
+
     }
 
     handleSubmit = (values, {
@@ -93,6 +118,23 @@ class NewLoginComponent extends React.Component{
         password: yup.string().required('Password is required')
     });
 
+    openLoginWindow = () => {
+      window.open(this.state.loginurl, 'popup', 'width=700,height=700');
+    };
+
+    base64Url = (input) => {
+      return input.toString(crypto.enc.Base64)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+    };
+
+    createRandomString = (num) => {
+      return [...Array(num)].map(() => Math.random().toString(36)[2]).join('')
+    };
+
+
+
     //TODO figureout how to load into errors from backend
     render() {
         if (this.state.isLoading) {
@@ -101,63 +143,12 @@ class NewLoginComponent extends React.Component{
         return (<Container className="py-4">
             <Row className="justify-content-center">
                 <Col md={8}>
-                    {this.state.errors.length > 0 &&
-                      <Card bg="danger" text="white">
-                          <Card.Header>Login Error</Card.Header>
-                          <Card.Body>
-                            <ul>
-                            {this.state.errors.map((item, key) => {
-                              return <li key={key}>{item}</li>
-                            })}
-                            </ul>
-                          </Card.Body>
-                      </Card>
-                    }
-                    <Formik validationSchema={this.schema} onSubmit={this.handleSubmit} initialValues={{
-                            email: '',
-                            password: '',
-                        }}>
-                        {
-                            ({
-                                values,
-                                errors,
-                                status,
-                                touched,
-                                handleBlur,
-                                handleChange,
-                                handleSubmit,
-                                isSubmitting
-                            }) => (<Card>
-                                <Card.Header>Login</Card.Header>
-                                <Card.Body>
-                                    <Form noValidate="noValidate" onSubmit={handleSubmit}>
-                                            <Form.Group as={Row} controlId="validationFormik03">
-                                                <Form.Label column md="4" className="text-md-right">E-Mail Address</Form.Label>
-                                                <Col md={6}>
-                                                  <Form.Control type="text" placeholder="Email" autoComplete="email" name="email" value={values.email} onChange={handleChange} onBlur={handleBlur} isValid={touched.email && !errors.email} isInvalid={touched.email && errors.email}/>
-                                                <Form.Control.Feedback type="valid"></Form.Control.Feedback>
-                                                <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
-                                                </Col>
-                                            </Form.Group>
-                                            <Form.Group as={Row} controlId="validationFormik04">
-                                                <Form.Label column md="4" className="text-md-right">Password</Form.Label>
-                                                <Col md={6}>
-                                                <Form.Control type="password" placeholder="Password" autoComplete="new-password" name="password" value={values.password} onChange={handleChange} onBlur={handleBlur} isValid={touched.password && !errors.password} isInvalid={touched.email && errors.password}/>
-                                                <Form.Control.Feedback type="valid"></Form.Control.Feedback>
-                                                <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
-                                                </Col>
-                                            </Form.Group>
-                                              <Form.Group as={Row}>
-                                              <Col md={{ span: 8, offset: 4 }}>
-                                            <Button type="submit" disabled={this.isSubmitting}>Login</Button>
-                                              <LinkContainer to="/password/reset"><Button variant="link">Forgot Your Password?</Button></LinkContainer>
-                                              </Col>
-                                            </Form.Group>
-                                    </Form>
-                                </Card.Body>
-                            </Card>)
-                        }
-                    </Formik>
+                    <Card>
+                      <Card.Header>Login</Card.Header>
+                      <Card.Body>
+                        <Button onClick={this.openLoginWindow}>Login</Button>
+                      </Card.Body>
+                    </Card>
                 </Col>
             </Row>
         </Container>);
