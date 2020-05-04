@@ -80,12 +80,14 @@ class LoginComponent extends React.Component{
             this.props.dispatch(loginUser({accessToken: authInfo.token}));
             this.loadUserService();
         })
-        .catch((error) => (
+        .catch((error) => {
+            const errors = Object.values(error.response.data.error);
             this.setState(() => ({
                 invalidCredentials: true,
-                isLoading: false
+                isLoading: false,
+                errors
             }))
-        ));
+        });
     };
 
     schema = yup.object().shape({

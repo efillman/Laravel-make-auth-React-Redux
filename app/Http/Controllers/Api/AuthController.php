@@ -82,35 +82,23 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        abort_unless($user, 400, 'This combination does not exists.');
-        abort_unless(
-            \Hash::check($request->password, $user->password),
-            400,
-            'This combination does not exists.'
-        );
+        if ($user) {
+            if (Hash::check($request->password, $user->password)) {
+              $resp = $this->proxy
+                  ->grantPasswordToken($request->email, $request->password);
 
-        $resp = $this->proxy
-            ->grantPasswordToken($request->email, $request->password);
-
-        return response([
-            'token' => $resp->access_token,
-            'expiresIn' => $resp->expires_in,
-            'message' => 'You have been logged in',
-        ], 200);
-
-        // if ($user) {
-        //     if (Hash::check($request->password, $user->password)) {
-        //         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-        //         $response = ['token' => $token];
-        //         return response($response, 200);
-        //     } else {
-        //         $response = ['error' => "Password missmatch"];
-        //         return response($response, 400);
-        //     }
-        // } else {
-        //     $response = ['error' => 'User does not exist'];
-        //     return response($response, 400);
-        // }
+              return response([
+                  'token' => $resp->access_token,
+                  'expiresIn' => $resp->expires_in,
+                  'message' => 'You have been logged in',
+              ], 200);
+            } else {
+                return response(['error' => array("Password missmatch")], 400);
+            }
+        } else {
+            $response = ['error' => array('User does not exist')];
+            return response($response, 400);
+        }
     }
 
     /**
@@ -150,17 +138,17 @@ class AuthController extends Controller
         }
 
         if (! hash_equals((string) $request['id'], (string) $request->user()->getKey())) {
-            $response = ['error' => 'We cant find a user with that e-mail address.'];
+            $response = ['error' => array('We cant find a user with that e-mail address.')];
             return response($response, 400);
         }
 
         if (! hash_equals((string) $request['hash'], sha1($request->user()->getEmailForVerification()))) {
-            $response = ['error' => 'This activation token is invalid'];
+            $response = ['error' => array('This activation token is invalid')];
             return response($response, 400);
         }
 
         if ($request->user()->hasVerifiedEmail()) {
-            $response = ['error' => 'User is already activated'];
+            $response = ['error' => array('User is already activated')];
             return response($response, 400);
         }
 
@@ -181,7 +169,7 @@ class AuthController extends Controller
     public function resendVerify(Request $request)
     {
         if ($request->user()->hasVerifiedEmail()) {
-            $response = ['error' => 'User is already activated'];
+            $response = ['error' => array('User is already activated')];
             return response($response, 400);
         }
 
@@ -218,7 +206,7 @@ class AuthController extends Controller
         $response == Password::RESET_LINK_SENT;
 
         if (!$response) {
-            $response = ['error' => 'Invalid Email'];
+            $response = ['error' => array('Invalid Email')];
             return response($response, 400);
         }
 
@@ -262,22 +250,12 @@ class AuthController extends Controller
         $response == Password::PASSWORD_RESET;
 
         if (!$response) {
-            $response = ['error' => 'Invalid Email or Token'];
+            $response = ['error' => array('Invalid Email or Token')];
             return response($response, 400);
         }
 
         if ($response) {
             $user = User::where('email', $request['email'])->first();
-            // $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-            // $response = ['token' => $token];
-            // return response($response, 200);
-            abort_unless($user, 400, 'This combination does not exists.');
-            abort_unless(
-                \Hash::check($request->password, $user->password),
-                400,
-                'This combination does not exists.'
-            );
-
             $resp = $this->proxy
                 ->grantPasswordToken($request->email, $request->password);
 
