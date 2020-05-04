@@ -89,7 +89,7 @@ class PasswordResetComponent extends React.Component {
             this.props.dispatch(loginUser({accessToken: authInfo.token}));
             this.loadUserService();
         }).catch((error) => {
-            const errors = Object.values(error.response.data.errors);
+            const errors = Object.values(error.response.data.error);
             this.setState(() => ({isLoading: false, errors}));
         });
         this.props.dispatch(resetOutUser());
@@ -156,7 +156,7 @@ class PasswordResetComponent extends React.Component {
                                         <Form.Group as={Row} controlId="validationFormik03">
                                             <Form.Label column="column" md="4" className="text-md-right">E-Mail Address</Form.Label>
                                             <Col md={6}>
-                                                <Form.Control type="text" disabled="true" placeholder="Email" autoComplete="email" name="email" value={values.email} onChange={handleChange} onBlur={handleBlur} isValid={!errors.email} isInvalid={errors.email}/>
+                                                <Form.Control type="text" disabled="true" placeholder="Email" autoComplete="email" name="email" value={this.props.resetPassword.resetEmail} onChange={handleChange} onBlur={handleBlur} isValid={!errors.email} isInvalid={errors.email}/>
                                                 <Form.Control.Feedback type="valid"></Form.Control.Feedback>
                                                 <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
                                             </Col>

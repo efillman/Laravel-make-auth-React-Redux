@@ -80,7 +80,7 @@ class RegistrationComponent extends React.Component {
           this.props.dispatch(loginUser({accessToken: authInfo.token}));
           this.loadUserService();
         }).catch((error) => {
-            const errors = Object.values(error.response.data.errors);
+            const errors = Object.values(error.response.data.error);
             this.setState(() => ({isLoading: false, errors}));
         });
     };

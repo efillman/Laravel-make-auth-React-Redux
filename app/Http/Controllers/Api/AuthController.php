@@ -15,9 +15,17 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Events\PasswordReset;
+use App\Utilities\ProxyRequest;
 
 class AuthController extends Controller
 {
+
+    protected $proxy;
+
+    public function __construct(ProxyRequest $proxy)
+    {
+        $this->proxy = $proxy;
+    }
     /**
      * [register description]
      * @param  Request $request [description]
@@ -35,14 +43,25 @@ class AuthController extends Controller
             return response(['error'=>$validator->errors()->all()], 400);
         }
 
-        $request['password']=Hash::make($request['password']);
+        //$request['password']=Hash::make($request['password']);
+        $originalPassword = $request['password'];
+        $request['password']=bcrypt($request['password']);
         $user = User::create($request->toArray());
         $user->sendEmailVerificationNotification();
 
-        $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-        $response = ['token' => $token];
+        $resp = $this->proxy
+            ->grantPasswordToken($user->email, $originalPassword);
 
-        return response($response, 200);
+        return response([
+            'token' => $resp->access_token,
+            'expiresIn' => $resp->expires_in,
+            'message' => 'You have been logged in',
+        ], 200);
+
+        // $token = $user->createToken('Laravel Password Grant Client')->accessToken;
+        // $response = ['token' => $token];
+        //
+        // return response($response, 200);
     }
 
     /**
@@ -63,19 +82,35 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if ($user) {
-            if (Hash::check($request->password, $user->password)) {
-                $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-                $response = ['token' => $token];
-                return response($response, 200);
-            } else {
-                $response = ['error' => "Password missmatch"];
-                return response($response, 400);
-            }
-        } else {
-            $response = ['error' => 'User does not exist'];
-            return response($response, 400);
-        }
+        abort_unless($user, 400, 'This combination does not exists.');
+        abort_unless(
+            \Hash::check($request->password, $user->password),
+            400,
+            'This combination does not exists.'
+        );
+
+        $resp = $this->proxy
+            ->grantPasswordToken($request->email, $request->password);
+
+        return response([
+            'token' => $resp->access_token,
+            'expiresIn' => $resp->expires_in,
+            'message' => 'You have been logged in',
+        ], 200);
+
+        // if ($user) {
+        //     if (Hash::check($request->password, $user->password)) {
+        //         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
+        //         $response = ['token' => $token];
+        //         return response($response, 200);
+        //     } else {
+        //         $response = ['error' => "Password missmatch"];
+        //         return response($response, 400);
+        //     }
+        // } else {
+        //     $response = ['error' => 'User does not exist'];
+        //     return response($response, 400);
+        // }
     }
 
     /**
@@ -86,7 +121,11 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $token = $request->user()->token();
-        $token->revoke();
+        //$token->revoke();
+        $token->delete();
+
+        // remove the httponly cookie
+        cookie()->queue(cookie()->forget('refresh_token'));
 
         $response = ['message' => 'You have been succesfully logged out!'];
         return response($response, 200);
@@ -229,10 +268,36 @@ class AuthController extends Controller
 
         if ($response) {
             $user = User::where('email', $request['email'])->first();
-            $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-            $response = ['token' => $token];
-            return response($response, 200);
+            // $token = $user->createToken('Laravel Password Grant Client')->accessToken;
+            // $response = ['token' => $token];
+            // return response($response, 200);
+            abort_unless($user, 400, 'This combination does not exists.');
+            abort_unless(
+                \Hash::check($request->password, $user->password),
+                400,
+                'This combination does not exists.'
+            );
+
+            $resp = $this->proxy
+                ->grantPasswordToken($request->email, $request->password);
+
+            return response([
+                'token' => $resp->access_token,
+                'expiresIn' => $resp->expires_in,
+                'message' => 'You have been logged in',
+            ], 200);
         }
+    }
+
+    public function refreshToken()
+    {
+      $resp = $this->proxy->refreshAccessToken();
+
+        return response([
+            'token' => $resp->access_token,
+            'expiresIn' => $resp->expires_in,
+            'message' => 'Token has been refreshed.',
+        ], 200);
     }
 
     /**
