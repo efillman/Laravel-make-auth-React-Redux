@@ -26,7 +26,7 @@ class LoginComponent extends React.Component{
     loadUserService = () => {
         const headers = {Accept: "application/json", Authorization: `Bearer ${this.props.authentication.accessToken}`};
 
-        axios.get(getUserAPI, {headers})
+        axios.get(getUserAPI)
             .then((response) => {
               const userInfo = response.data;
 
@@ -92,7 +92,7 @@ class LoginComponent extends React.Component{
 
     schema = yup.object().shape({
         email: yup.string().email().required(),
-        password: yup.string().required('Password is required')
+        password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
     });
 
     //TODO figureout how to load into errors from backend

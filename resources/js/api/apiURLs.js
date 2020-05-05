@@ -13,3 +13,5 @@ export const passwordResetAPI = "api/password/reset";
 export const logoutAPI = "api/logout";
 
 export const getUserAPI = "api/user";
+
+export const refreshTokenAPI = "api/refresh-token";

@@ -43,7 +43,6 @@ class AuthController extends Controller
             return response(['error'=>$validator->errors()->all()], 400);
         }
 
-        //$request['password']=Hash::make($request['password']);
         $originalPassword = $request['password'];
         $request['password']=bcrypt($request['password']);
         $user = User::create($request->toArray());
@@ -58,10 +57,6 @@ class AuthController extends Controller
             'message' => 'You have been logged in',
         ], 200);
 
-        // $token = $user->createToken('Laravel Password Grant Client')->accessToken;
-        // $response = ['token' => $token];
-        //
-        // return response($response, 200);
     }
 
     /**

@@ -5,10 +5,10 @@ import {Navbar, Nav, NavDropdown, MenuItem} from 'react-bootstrap';
 import { LinkContainer } from "react-router-bootstrap";
 import {Container, Row, Col, ButtonToolbar, Button} from 'react-bootstrap';
 
-import {loginAPI, getUserAPI} from "../api/apiURLs";
+import {loginAPI, getUserAPI, refreshTokenAPI} from "../api/apiURLs";
 import {loginUser, logoutUser} from "../actions/authentication";
 import {userInfoIn, userInfoOut} from "../actions/userInfo";
-import {ACCESS_TOKEN, REFRESH_TOKEN} from "../api/strings";
+
 
 class Header extends React.Component {
 
@@ -45,6 +45,49 @@ class Header extends React.Component {
             this.changeMenuOptionsUnauthenticated();
           }
         }
+
+        //if accesstoken exists add it to the axios request
+        axios.interceptors.request.use(
+         config => {
+             const token = this.props.authentication.accessToken;
+             if (token) {
+                 config.headers['Authorization'] = 'Bearer ' + token;
+             }
+             // config.headers['Content-Type'] = 'application/json';
+             return config;
+         },
+         error => {
+             Promise.reject(error)
+         });
+
+        axios.interceptors.response.use((response) => {
+           return response
+        }, function (error) {
+            const originalRequest = error.config;
+
+            //if the request just came from trying a refresh token send to login
+            if (error.response.status === 401 && originalRequest.url === 'http://dev.react.local/api/refresh-token') {
+                this.props.dispatch(userInfoOut());
+                this.props.dispatch(logoutUser());
+                this.props.history.push("/login");
+                return Promise.reject(error);
+              }
+
+              if (error.response.status === 401 && !originalRequest._retry) {
+                   originalRequest._retry = true;
+                   return axios.post(refreshTokenAPI)
+                       .then(res => {
+                           if (res.status === 200) {
+                             const authInfo = res.data;
+                             this.props.dispatch(loginUser({accessToken: authInfo.token}));
+                             axios.defaults.headers.common['Authorization'] = 'Bearer ' + authInfo.token;
+                               return axios(originalRequest);
+                           }
+                       })
+               }
+
+           return Promise.reject(error);
+         });
 
     }
 

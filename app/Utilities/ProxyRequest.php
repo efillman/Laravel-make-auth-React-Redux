@@ -19,7 +19,7 @@ class ProxyRequest
     {
         $refreshToken = request()->cookie('refresh_token');
 
-        abort_unless($refreshToken, 400, 'Your refresh token is expired.');
+        abort_unless($refreshToken, 401, 'Your refresh token is expired.');
 
         $params = [
             'grant_type' => 'refresh_token',
