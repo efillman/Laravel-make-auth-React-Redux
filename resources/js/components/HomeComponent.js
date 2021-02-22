@@ -1,8 +1,27 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
+import {withRouter, Link} from 'react-router-dom';
 import {Container, Row, Col, Card} from 'react-bootstrap';
+import {loginAPI, getUserAPI} from "../api/apiURLs";
 
-export default class HomeComponent extends Component {
+class HomeComponent extends React.Component {
+
+    state = {
+        userInfo: [],
+        errors: []
+    };
+
+    componentDidMount(){
+      axios.get(getUserAPI)
+          .then((response) => {
+            const userInfo = response.data;
+            this.setState(() => ({userInfo: userInfo}));
+          })
+          .catch((error) => {
+            this.setState(() => ({errors: error}));
+          });
+    }
+
     render() {
         return (
           <Container className="py-4">
@@ -16,6 +35,13 @@ export default class HomeComponent extends Component {
                             </Card.Title>
                             <Card.Text>
                                 Home Component
+                                {this.state.userInfo.length > 0 &&
+                                    <ul>
+                                    {this.state.userInfo.map((item, key) => {
+                                      return <li key={key}>{item}</li>
+                                    })}
+                                    </ul>
+                                }
                             </Card.Text>
                         </Card.Body>
                     </Card>
@@ -25,3 +51,5 @@ export default class HomeComponent extends Component {
       );
     }
 }
+
+export default (withRouter(HomeComponent));

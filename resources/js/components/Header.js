@@ -19,7 +19,7 @@ class Header extends React.Component {
     };
 
     changeMenuOptionsAuthenticated = () => {
-        this.setState(() => ({menuItems: ["Log Out"], loggedin: true}));
+        this.setState(() => ({menuItems: ["Home","Log Out"], loggedin: true}));
     };
 
     changeMenuOptionsUnauthenticated = () => {
@@ -60,35 +60,46 @@ class Header extends React.Component {
              Promise.reject(error)
          });
 
-        axios.interceptors.response.use((response) => {
-           return response
-        }, function (error) {
-            const originalRequest = error.config;
-
-            //if the request just came from trying a refresh token send to login
-            if (error.response.status === 401 && originalRequest.url === 'http://dev.react.local/api/refresh-token') {
-                this.props.dispatch(userInfoOut());
-                this.props.dispatch(logoutUser());
-                this.props.history.push("/login");
-                return Promise.reject(error);
-              }
-
-              if (error.response.status === 401 && !originalRequest._retry) {
-                   originalRequest._retry = true;
-                   return axios.post(refreshTokenAPI)
-                       .then(res => {
-                           if (res.status === 200) {
-                             const authInfo = res.data;
-                             this.props.dispatch(loginUser({accessToken: authInfo.token}));
-                             axios.defaults.headers.common['Authorization'] = 'Bearer ' + authInfo.token;
-                               return axios(originalRequest);
-                           }
-                       })
+         axios.interceptors.response.use(
+           response => response,
+           error => {
+             const originalRequest = error.config;
+             //if the request just came from trying a refresh token send to login
+             if (error.response.status === 401 && originalRequest.url === 'http://dev.react.local/api/refresh-token')
+             {
+                 dispatch(userInfoOut());
+                 dispatch(logoutUser());
+                 this.props.history.push("/login");
+                 return Promise.reject(error);
                }
 
-           return Promise.reject(error);
-         });
+               if (error.response.status === 401 && !originalRequest._retry) {
+                    originalRequest._retry = true;
+                    const token = this.refreshToken();
+                    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+                    return axios(originalRequest);
 
+                }
+
+            return Promise.reject(error);
+          });
+
+    }
+
+    async refreshToken() {
+      await axios.post(refreshTokenAPI)
+          .then(res => {
+              if (res.status === 200) {
+                const authInfo = res.data;
+                this.props.dispatch(loginUser({accessToken: authInfo.token}));
+                return authInfo.token;
+              }
+            }).catch((error) => {
+               const errors = error;
+                        this.setState(() => ({
+                            errors
+                        }))
+                    });
     }
 
     //can use this method if you want to change logo link if authenticated
@@ -131,6 +142,9 @@ class Header extends React.Component {
             }
             if(item === "Forgot Password"){
                 return <LinkContainer to="/password/request" key={key}><Nav.Link key={key}>Forgot Password</Nav.Link></LinkContainer>
+            }
+            if(item === "Home"){
+                return <LinkContainer to="/home" key={key}><Nav.Link key={key}>Home</Nav.Link></LinkContainer>
             }
 
             if(item === "Log Out"){
