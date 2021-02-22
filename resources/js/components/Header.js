@@ -65,22 +65,13 @@ class Header extends React.Component {
            error => {
              const originalRequest = error.config;
              //if the request just came from trying a refresh token send to login
-             if (error.response.status === 401 && originalRequest.url === 'http://dev.react.local/api/refresh-token')
-             {
-                 dispatch(userInfoOut());
-                 dispatch(logoutUser());
+               if (error.response.status === 401) {
+                 this.props.dispatch(userInfoOut());
+                 this.props.dispatch(logoutUser());
                  this.props.history.push("/login");
-                 return Promise.reject(error);
-               }
-
-               if (error.response.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true;
-                    const token = this.refreshToken();
-                    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-                    return axios(originalRequest);
-
-                }
-
+                 // this refreshToken 401
+                 //somehow use the refresh token here axios originalRequest
+              }
             return Promise.reject(error);
           });
 
@@ -93,6 +84,9 @@ class Header extends React.Component {
                 const authInfo = res.data;
                 this.props.dispatch(loginUser({accessToken: authInfo.token}));
                 return authInfo.token;
+              }
+              if (res.status === 401) {
+                return res.status;
               }
             }).catch((error) => {
                const errors = error;

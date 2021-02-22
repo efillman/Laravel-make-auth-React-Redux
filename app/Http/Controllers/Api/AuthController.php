@@ -266,11 +266,17 @@ class AuthController extends Controller
     {
       $resp = $this->proxy->refreshAccessToken();
 
+      if (property_exists($resp, 'refresh_token')) {
         return response([
             'token' => $resp->access_token,
             'expiresIn' => $resp->expires_in,
             'message' => 'Token has been refreshed.',
         ], 200);
+      } else {
+        return response([
+            'message' => 'Invalid Refresh Token.',
+        ], 401);
+      }
     }
 
     /**

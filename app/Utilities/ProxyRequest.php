@@ -45,8 +45,9 @@ class ProxyRequest
         $proxy = \Request::create('oauth/token', 'post', $params);
         $resp = json_decode(app()->handle($proxy)->getContent());
         //var_dump($resp);
-        $this->setHttpOnlyCookie($resp->refresh_token);
-
+        if (property_exists($resp, 'refresh_token')) {
+          $this->setHttpOnlyCookie($resp->refresh_token);
+        }
         return $resp;
     }
 
